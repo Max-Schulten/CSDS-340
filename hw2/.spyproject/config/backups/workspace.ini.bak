@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['parity_perceptron.py', '../hw1/pimaPerceptron.py', 'perceptron_logic.py', 'hw2.py']
+recent_files = ['parity_perceptron.py', '../hw1/pimaPerceptron.py', 'perceptron_logic.py', 'lr_svm_wine.py', '../hw1/wineNaiveBayes.py', 'hw2.py', 'gaussian_svm_cross.py']
 
 [main]
 version = 0.2.0

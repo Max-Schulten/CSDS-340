@@ -33,13 +33,13 @@ cols = [
     "proline"
 ]
 
-df = pd.read_csv("wine.data.csv", header= None, names=cols)
+df = pd.read_csv("wine.data.csv", header=None, names=cols)
 
 # Split into features (tabular), classes (vector)
-X, y = df.iloc[:, 1:], df.iloc[:,0]
+X, y = df.iloc[:, 1:], df.iloc[:, 0]
 
 # Split data into train and test
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5,
                                                     random_state=1, stratify=y)
 # Scale the data
 X_train_std = StandardScaler().fit_transform(X_train)
@@ -54,10 +54,10 @@ for c in c_values:
     preds = LogisticRegression(random_state=1, C=c)\
         .fit(X_train_std, y_train)\
         .predict(X_test_std)
-    
+
     # Retrieve accuracy
     acc = accuracy_score(y_test, preds)
-    
+
     # Add to results
     LR_results.append({"C": c, "Accuracy": acc})
 
@@ -71,13 +71,15 @@ pprint(LR_results)
 print("-"*100)
 
 # Print best C and Accuracy score
-print(f"Logistic Regression (C={LR_results[0]['C']:.4f}): {LR_results[0]['Accuracy']:.4f}")
+print(
+    f"Logistic Regression (C={LR_results[0]['C']:.4f}): {LR_results[0]['Accuracy']:.4f}")
 
 print("-"*100)
 
-kernels = ['linear', 'poly', 'rbf', 'sigmoid'] # All kernel types
-degrees = np.arange(1, 6, 1) # Degree of polynomial (Only applies to polynomial kernel)
-gammas = np.arange(0, 1, 0.1)
+kernels = ['linear', 'poly', 'rbf', 'sigmoid']  # All kernel types
+# Degree of polynomial (Only applies to polynomial kernel)
+degrees = np.arange(1, 6, 1)
+gammas = np.logspace(-6, 2, 9)
 
 SVC_results = []
 
@@ -89,35 +91,38 @@ for kernel in kernels:
                     # Fit and predict
                     preds = SVC(random_state=1, C=c, kernel=kernel, degree=degree, gamma=gamma)\
                         .fit(X_train_std, y_train)\
-                        .predict(X_test_std)# Note that degree will be ignored for non-polynomial kernel
-                    
+                        .predict(X_test_std)  # Note that degree will be ignored for non-polynomial kernel
+
                     # Retrieve accuracy
                     acc = accuracy_score(y_test, preds)
-                    
+
                     # Add to results
-                    SVC_results.append({"C": c, "Kernel": kernel, "Degree": degree, "Gamma": gamma, "Accuracy": acc})
+                    SVC_results.append(
+                        {"C": c, "Kernel": kernel, "Degree": degree, "Gamma": gamma, "Accuracy": acc})
             else:
                 # Fit and predict
                 preds = SVC(random_state=1, C=c, kernel=kernel, gamma=gamma)\
                     .fit(X_train_std, y_train)\
-                    .predict(X_test_std)# Note that degree will be ignored for non-polynomial kernel
-                
+                    .predict(X_test_std)  # Note that degree will be ignored for non-polynomial kernel
+
                 # Retrieve accuracy
                 acc = accuracy_score(y_test, preds)
-                
+
                 # Add to results
-                SVC_results.append({"C": c, "Kernel": kernel, "Degree": None, "Gamma": gamma, "Accuracy": acc})
+                SVC_results.append(
+                    {"C": c, "Kernel": kernel, "Degree": None, "Gamma": gamma, "Accuracy": acc})
 
 # Sort results by accuracy score
 SVC_results.sort(reverse=True, key=lambda x: x["Accuracy"])
 
-
-# Print Top 5
-pprint(SVC_results[0:4])
+df = pd.DataFrame(SVC_results)
+# Print Top performer from each kernel type
+print(df.groupby("Kernel", group_keys=False).apply(lambda g: g.nlargest(1, "Accuracy")).reset_index(drop=True))
 
 print("-"*100)
 
 # Print best C, Kernel, Degree (if applicable) and Accuracy score
-print(f"SVM Regression (Kernel={SVC_results[0]['Kernel']}, Degree={SVC_results[0]['Degree']}, C={SVC_results[0]['C']:.3f}, Gamma={SVC_results[0]['Gamma']:.43}): {SVC_results[0]['Accuracy']:.4f}")
+print(
+    f"SVM Regression (Kernel={SVC_results[0]['Kernel']}, Degree={SVC_results[0]['Degree']}, C={SVC_results[0]['C']:.3f}, Gamma={SVC_results[0]['Gamma']:.43}): {SVC_results[0]['Accuracy']:.4f}")
 
 print("-"*100)
