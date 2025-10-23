@@ -8,42 +8,30 @@ Created on Sun Oct 12 16:36:53 2025
 
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.naive_bayes import GaussianNB
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.metrics import roc_auc_score
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedKFold, cross_val_score
-from sklearn.ensemble import BaggingClassifier
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import make_pipeline
+from xgboost import XGBClassifier
 
-# from sklearn.model_selection import train_test_split
-
-# Define a model
 model = make_pipeline(
-        SimpleImputer(missing_values=-1, strategy='median'),
-        StandardScaler(),
-        
-        LogisticRegression(max_iter=999,
-                           C=0.5, 
-                           random_state=1, 
-                           penalty='elasticnet',
-                           solver='saga',
-                           l1_ratio=0.5)
+    XGBClassifier(
+        objective="binary:logistic", eval_metric="auc",
+        n_estimators=2000,
+        learning_rate=0.003,
+        max_depth=5,
+        min_child_weight=1,
+        gamma=1,
+        subsample=0.7,
+        colsample_bytree=0.5333,
+        reg_alpha=0.1841,
+        reg_lambda=0.5957,
+        scale_pos_weight=0.9,
+        max_delta_step=2,
+        n_jobs=-1,
+        random_state=67,
+        missing=-1
     )
-
-# Cross validation strategy
-cv = StratifiedKFold(n_splits=15, shuffle=True, random_state=1)
-
-
-# Preprocessing strategy
-pipeline = Pipeline([
-    ("imputer", SimpleImputer(missing_values=-1, strategy='median')),
-    ("standardize", StandardScaler()),
-    ("classify", GaussianNB())
-    ])
-
+)
 
 def aucCV(features,labels):
 
@@ -53,25 +41,7 @@ def aucCV(features,labels):
 
 def predictTest(trainFeatures,trainLabels,testFeatures):
     
-    model = make_pipeline(
-        SimpleImputer(missing_values=-1, strategy="median"),
-        StandardScaler(),
-        BaggingClassifier(
-            estimator=KNeighborsClassifier(
-                n_neighbors=9,
-                metric="minkowski",
-                p=1,
-                weights="distance"
-            ),
-            n_estimators=623,
-            n_jobs=-1,
-            max_features=0.17802172282792486,
-            max_samples=0.6771376951247073,
-            bootstrap=True,
-            bootstrap_features=False,
-            random_state=420,
-        )
-    )
+    
     model.fit(trainFeatures,trainLabels)
     
     # Use predict_proba() rather than predict() to use probabilities rather
