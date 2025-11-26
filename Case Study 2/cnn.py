@@ -19,10 +19,27 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 train_end_index = 3511
 sensor_names = ['Acc_x', 'Acc_y', 'Acc_z', 'Gyr_x', 'Gyr_y', 'Gyr_z']
 train_suffix = '_train_1.csv'
+test_suffix = '_train_2.csv'
 torch.manual_seed(531)
 
 #%% Data Load
 
+def load_sensor_data(sensor_names, suffix, prefix):
+    data_slice_0 = np.loadtxt(prefix + sensor_names[0] + suffix, delimiter=',')
+    data = np.empty((data_slice_0.shape[0], data_slice_0.shape[1],
+                     len(sensor_names)))
+    data[:, :, 0] = data_slice_0
+    for sensor_index in range(1, len(sensor_names)):
+        data[:, :, sensor_index] = np.loadtxt(
+            prefix + sensor_names[sensor_index] + suffix, delimiter=',')
+    
+    return data
+
+train_labels = np.loadtxt('Train_1/labels' +  train_suffix, dtype='int')
+train_data = load_sensor_data(sensor_names, train_suffix, 'Train_1/')
+test_labels = np.loadtxt('Train_2/labels' + test_suffix, dtype='int')
+test_data = load_sensor_data(sensor_names, test_suffix, 'Train_2/')
+"""
 # Load labels and training sensor data into 3-D array
 labels = np.loadtxt('Train_1/labels_train_1.csv', dtype='int')
 data_slice_0 = np.loadtxt('Train_1/' + sensor_names[0] + '_train_1.csv',
@@ -41,6 +58,7 @@ train_data = data[:train_end_index+1, :, :]
 train_labels = labels[:train_end_index+1]
 test_data = data[train_end_index+1:, :, :]
 test_labels = labels[train_end_index+1:]
+"""
 
 train_mean = train_data.mean(axis=(0, 1), keepdims=True)
 train_std  = train_data.std(axis=(0, 1), keepdims=True)
@@ -124,7 +142,7 @@ loss_fn = nn.CrossEntropyLoss()
 
 optimizer = optim.AdamW(
     model.parameters(),
-    lr=1e-3,
+    lr=1e-4,
     weight_decay=1e-5,
 )
 
